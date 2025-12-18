@@ -7,6 +7,10 @@ const path = require('path');
 // Payment Mode Configuration
 const PAYMENT_MODE = process.env.PAYMENT_MODE || 'HDFC'; 
 
+console.log('💳 Payment Mode:', PAYMENT_MODE);
+console.log('🔑 HDFC_API_KEY exists:', !!process.env.HDFC_API_KEY);
+console.log('🏢 HDFC_MERCHANT_ID:', process.env.HDFC_MERCHANT_ID);
+
 // Initialize HDFC Payment Handler
 let hdfcPaymentHandler = null;
 if (PAYMENT_MODE === 'HDFC') {
@@ -14,12 +18,26 @@ if (PAYMENT_MODE === 'HDFC') {
     const { PaymentHandler, validateHMAC_SHA256 } = require('../services/PaymentHandler');
     const configPath = path.join(__dirname, '../config/hdfc-payment-config.json');
     
-    // Try to use config file first (for Vercel deployment)
-    hdfcPaymentHandler = PaymentHandler.getInstance(configPath);
-    console.log('✅ HDFC Payment Gateway initialized from config file');
+    console.log('📁 Config path:', configPath);
+    console.log('📂 __dirname:', __dirname);
+    console.log('📂 process.cwd():', process.cwd());
     
-    // Export validator for use in verify route
-    router.hdfcValidator = validateHMAC_SHA256;
+    // Check if file exists
+    const fs = require('fs');
+    const configExists = fs.existsSync(configPath);
+    console.log('📄 Config file exists:', configExists);
+    
+    if (!configExists) {
+      console.error('❌ HDFC config file not found at:', configPath);
+      console.log('ℹ️  Falling back to Bank Transfer mode');
+    } else {
+      // Try to use config file first (for Vercel deployment)
+      hdfcPaymentHandler = PaymentHandler.getInstance(configPath);
+      console.log('✅ HDFC Payment Gateway initialized from config file');
+      
+      // Export validator for use in verify route
+      router.hdfcValidator = validateHMAC_SHA256;
+    }
   } catch (error) {
     console.error('❌ Error initializing HDFC Payment Handler:', error.message);
     console.error('Stack trace:', error.stack);
@@ -100,7 +118,43 @@ router.post('/create-order', [
         receipt: receipt || `receipt_${Date.now()}`,
         notes: notes || {}
       };
+      
+      try {
+        const order = await razorpay.orders.create(options);
+        console.log('✅ Razorpay order created:', order.id);
+        
+        return res.json({
+          success: true,
+          paymentMode: 'RAZORPAY',
+          order: order
+        });
+      } catch (error) {
+        console.error('❌ Razorpay Error:', error);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to create Razorpay order',
+          details: error.message
+        });
+      }
     }
+
+    // Bank Transfer Fallback
+    console.log('⚠️ Using Bank Transfer mode. PAYMENT_MODE:', PAYMENT_MODE, 'HDFC Handler:', !!hdfcPaymentHandler);
+    return res.json({
+      success: true,
+      paymentMode: 'BANK_TRANSFER',
+      order: {
+        id: orderId,
+        amount: amount,
+        currency: currency,
+        receipt: receipt || `receipt_${Date.now()}`
+      },
+      bankDetails: {
+        accountName: 'Immersive Trips',
+        accountNumber: 'Complete the bank transfer and share payment proof',
+        message: 'Please complete the bank transfer and share payment proof with us.'
+      }
+    });
     
   } catch (error) {
     console.error('Error creating payment order:', error);
