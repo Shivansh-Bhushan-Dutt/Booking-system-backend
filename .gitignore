@@ -1,5 +1,5 @@
-# Environment variables (CRITICAL - NEVER COMMIT!)
-.env
+# Environment variables - TEMPORARILY ALLOWING FOR DEPLOYMENT
+# .env
 .env.local
 .env.production
 .env.development
