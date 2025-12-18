@@ -5,7 +5,7 @@ const { body, validationResult } = require('express-validator');
 const path = require('path');
 
 // Payment Mode Configuration
-const PAYMENT_MODE = process.env.PAYMENT_MODE || 'HDFC'; // Options: 'RAZORPAY', 'BANK_TRANSFER', 'HDFC'
+const PAYMENT_MODE = process.env.PAYMENT_MODE || 'HDFC'; 
 
 // Initialize HDFC Payment Handler
 let hdfcPaymentHandler = null;
@@ -25,21 +25,6 @@ if (PAYMENT_MODE === 'HDFC') {
     console.error('Stack trace:', error.stack);
     console.log('ℹ️  Falling back to Bank Transfer mode');
   }
-}
-
-// Initialize Razorpay only if configured
-let razorpay = null;
-if (PAYMENT_MODE === 'RAZORPAY' && process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-  const Razorpay = require('razorpay');
-  razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-  });
-  console.log('✅ Razorpay payment gateway initialized');
-}
-
-if (!hdfcPaymentHandler && !razorpay) {
-  console.log('ℹ️  Using Bank Transfer/Manual payment mode');
 }
 
 /**
@@ -115,41 +100,8 @@ router.post('/create-order', [
         receipt: receipt || `receipt_${Date.now()}`,
         notes: notes || {}
       };
-
-      const order = await razorpay.orders.create(options);
-
-      return res.json({
-        success: true,
-        paymentMode: 'RAZORPAY',
-        order: {
-          id: order.id,
-          amount: order.amount,
-          currency: order.currency,
-          receipt: order.receipt
-        },
-        key: process.env.RAZORPAY_KEY_ID
-      });
     }
-
-    // Bank Transfer (Manual Payment)
-    return res.json({
-      success: true,
-      paymentMode: 'BANK_TRANSFER',
-      order: {
-        id: orderId,
-        amount: amount,
-        currency: currency,
-        receipt: receipt || `receipt_${Date.now()}`
-      },
-      bankDetails: {
-        accountName: process.env.BANK_ACCOUNT_NAME || 'Immersive Trips',
-        accountNumber: process.env.BANK_ACCOUNT_NUMBER || 'Will be provided',
-        ifscCode: process.env.BANK_IFSC_CODE || 'Will be provided',
-        bankName: process.env.BANK_NAME || 'Will be provided',
-        upiId: process.env.UPI_ID || 'Will be provided'
-      },
-      message: 'Please complete the bank transfer and share payment proof'
-    });
+    
   } catch (error) {
     console.error('Error creating payment order:', error);
     res.status(500).json({

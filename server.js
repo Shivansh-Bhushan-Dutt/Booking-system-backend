@@ -39,6 +39,31 @@ app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/admin', require('./routes/admin'));
 
+// Debug endpoint - check payment configuration
+app.get('/api/debug/payment-config', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const configPath = path.join(__dirname, 'config/hdfc-payment-config.json');
+  
+  res.json({ 
+    message: 'Payment Configuration Debug',
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      PAYMENT_MODE: process.env.PAYMENT_MODE,
+      HDFC_API_KEY_SET: !!process.env.HDFC_API_KEY,
+      HDFC_MERCHANT_ID: process.env.HDFC_MERCHANT_ID,
+      FRONTEND_URL: process.env.FRONTEND_URL
+    },
+    config: {
+      configFileExists: fs.existsSync(configPath),
+      configPath: configPath,
+      cwd: process.cwd(),
+      dirname: __dirname
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Test endpoint for debugging
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Server is working!', timestamp: new Date().toISOString() });
