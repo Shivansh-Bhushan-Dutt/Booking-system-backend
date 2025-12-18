@@ -12,21 +12,11 @@ let hdfcPaymentHandler = null;
 if (PAYMENT_MODE === 'HDFC') {
   try {
     const { PaymentHandler, validateHMAC_SHA256 } = require('../services/PaymentHandler');
+    const configPath = path.join(__dirname, '../config/hdfc-payment-config.json');
     
-    // Create config from environment variables (works on Vercel)
-    const hdfcConfig = {
-      API_KEY: process.env.HDFC_API_KEY,
-      MERCHANT_ID: process.env.HDFC_MERCHANT_ID,
-      PAYMENT_PAGE_CLIENT_ID: process.env.HDFC_PAYMENT_PAGE_CLIENT_ID,
-      BASE_URL: process.env.HDFC_BASE_URL,
-      RESPONSE_KEY: process.env.HDFC_RESPONSE_KEY,
-      ENABLE_LOGGING: process.env.HDFC_ENABLE_LOGGING === 'true',
-      LOGGING_PATH: './logs/PaymentHandler.log'
-    };
-    
-    // Initialize with config object instead of file path
-    hdfcPaymentHandler = PaymentHandler.getInstanceFromConfig(hdfcConfig);
-    console.log('✅ HDFC Payment Gateway initialized from environment variables');
+    // Try to use config file first (for Vercel deployment)
+    hdfcPaymentHandler = PaymentHandler.getInstance(configPath);
+    console.log('✅ HDFC Payment Gateway initialized from config file');
     
     // Export validator for use in verify route
     router.hdfcValidator = validateHMAC_SHA256;

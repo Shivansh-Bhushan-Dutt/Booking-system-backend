@@ -4,8 +4,8 @@
 .env.production
 .env.development
 
-# Payment Configuration (CRITICAL - Contains HDFC credentials!)
-config/hdfc-payment-config.json
+# Payment Configuration - COMMENTED OUT FOR DEPLOYMENT
+# config/hdfc-payment-config.json
 
 # Dependencies
 node_modules/
