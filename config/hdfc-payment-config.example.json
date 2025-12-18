@@ -1,0 +1,9 @@
+{
+    "API_KEY": "YOUR_PRODUCTION_API_KEY_FROM_HDFC",
+    "MERCHANT_ID": "YOUR_MERCHANT_ID",
+    "PAYMENT_PAGE_CLIENT_ID": "YOUR_CLIENT_ID",
+    "BASE_URL": "https://smartgateway.hdfc.bank.in",
+    "ENABLE_LOGGING": false,
+    "LOGGING_PATH": "./logs/PaymentHandler.log",
+    "RESPONSE_KEY": "YOUR_PRODUCTION_RESPONSE_KEY_FROM_HDFC"
+}
