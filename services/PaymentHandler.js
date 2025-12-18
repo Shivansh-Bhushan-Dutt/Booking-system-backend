@@ -78,6 +78,22 @@ class PaymentHandler {
     return new PaymentHandler(userSpecifiedConfigPath);
   }
 
+  /**
+   * Create instance from config object (for Vercel deployment)
+   */
+  static getInstanceFromConfig(configObject) {
+    if (PaymentHandler.paymentHandlerInstance !== undefined)
+      return PaymentHandler.paymentHandlerInstance;
+    
+    const instance = Object.create(PaymentHandler.prototype);
+    instance.paymentConfigs = configObject;
+    instance.validatePaymentConfigs();
+    instance.logger = new SimpleLogger(instance.getLoggingPath());
+    instance.logger.disableLogging = !instance.getEnableLogging();
+    PaymentHandler.paymentHandlerInstance = instance;
+    return PaymentHandler.paymentHandlerInstance;
+  }
+
   constructor(userSpecifiedConfigPath) {
     if (PaymentHandler.paymentHandlerInstance !== undefined)
       return PaymentHandler.paymentHandlerInstance;
