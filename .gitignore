@@ -1,8 +1,8 @@
-# Environment variables - TEMPORARILY ALLOWING FOR DEPLOYMENT
+# Environment variables - COMMENTED FOR DEPLOYMENT
 # .env
-.env.local
-.env.production
-.env.development
+# .env.local
+# .env.production
+# .env.development
 
 # Payment Configuration - COMMENTED OUT FOR DEPLOYMENT
 # config/hdfc-payment-config.json
